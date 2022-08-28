@@ -1,7 +1,7 @@
 NAME	=	cub3D
 
 CC		=	gcc
-FLAGS	=	-Wall -Werror -Wextra -g
+FLAGS	=	 -g
 
 GNL			=	$(GNL_DIR)gnl.a
 GNL_DIR 	=	 ./utils/GNL/
@@ -13,14 +13,15 @@ MLX 			=	$(MLX_DIR)libmlx_Linux.a
 MLX_DIR	=	./mlx-linux/
 MLX_FLAGS 			=	-lm -lmlx -lX11 -lXext -lGL
 
-HEADER		=	inc/cub3d.h \
+HEADER		=	inc/cub3D.h \
+				inc/configure.h\
+				inc/fun_prototypes.h\
+				inc/structs.h\
 				mlx-linux/mlx.h \
 				utils/LIBFT/libft.h \
 				utils/GNL/get_next_line.h
 
-SOURCES_L	=	main.c \
-				reader.c \
-				inits.c \
+SOURCES_L	=	all.c
 	
 SOURCES_DIRECTORY	= ./src/
 SOURCES 			= $(addprefix $(SOURCES_DIRECTORY), $(SOURCES_L))
@@ -42,6 +43,7 @@ $(NAME): $(OBJECTS) $(HEADER)
 $(OBJ_DIR)%.o : $(SOURCES_DIRECTORY)%.c $(HEADER)
 	@mkdir -p $(OBJ_DIR)
 	@$(CC) $(FLAGS) -c $< -o $@
+	
 
 clean:
 	@make -sC $(LIBFT_DIR) clean
@@ -55,4 +57,4 @@ fclean: clean
 	@rm -f $(GNL)
 	@rm -f $(NAME)
 
-re:	fclean all 
+re:	fclean all
