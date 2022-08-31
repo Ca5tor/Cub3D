@@ -6,10 +6,9 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 10:45:55 by ltacos            #+#    #+#             */
-/*   Updated: 2022/08/31 10:46:14 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/08/31 11:28:05 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "../inc/cub3D.h"
 #define DELTA 0.12f
@@ -17,10 +16,10 @@
 #define FOV (3.1415926535 / 3)
 #define HALF_FOV (FOV / 2)
 #define MAX_DEPTH (WIDTH / BLOCK_SIZE * BLOCK_SIZE)
-#define NUM_RAYS	200
+#define NUM_RAYS	400
 #define DELTA_RAY (FOV / (NUM_RAYS - 1))
 #define DIST (NUM_RAYS / (2 * tan(HALF_FOV)))
-#define PROJ_COEFF (DIST * BLOCK_SIZE) 
+#define PROJ_COEFF (3 * DIST * BLOCK_SIZE) 
 #define SCALE (WIDTH / NUM_RAYS) 
 
 typedef struct s_mlx
@@ -156,17 +155,6 @@ double	mod(double a)
 	return (a);
 }
 
-void	_set_background(t_mlx *mlx)
-{
-	int	*img;
-	int	i;
-
-	i = 0;
-	img = (int *)(mlx->p_addr);
-	while (i < HEIGHT * WIDTH)
-		img[i++] = BACKGROUND >> 2;
-}
-
 int	_put_pixel(t_pos *a, int color, t_mlx *mlx)
 {
 	char	*dst;
@@ -200,21 +188,6 @@ void	_dda_line(t_pos a, t_pos b, int color, t_mlx *mlx)
 	
 }
 
-void	draw_rect(t_pos start, int len, t_mlx *mlx)
-{
-	t_pos	tmp;
-
-	tmp.x = start.x + len - 1;
-	tmp.y = start.y - 1;
-	int i = -1;
-	while (++i < len - 1)
-	{
-		_dda_line(start, tmp, WALL_B, mlx);
-		start.y += 1;
-		tmp.y += 1;
-	}
-}
-
 void	draw_rect21(t_pos start, int w, int h, t_mlx *mlx, int color)
 {
 	t_pos	tmp;
@@ -229,14 +202,6 @@ void	draw_rect21(t_pos start, int w, int h, t_mlx *mlx, int color)
 		start.y++;
 		tmp.y++;
 	}
-}
-
-void	print_map2d(t_data *data)
-{
-	int count = 31;
-	int c = 0;
-	while (c < count)
-		draw_rect(data->map_pos[c++], BLOCK_SIZE, data->mlx);
 }
 
 int	close_win(t_data *data)
@@ -405,9 +370,10 @@ void	ray_cast2(t_data *data){
 		//projection
 		double depth = find_min(depth_h, depth_v);
 		depth *= cos(data->plr->angl - cur_ang);
+		depth = find_max(depth, 0.00001);
 		int color = 255 / (1 + depth * depth * 0.0002);
 		int clr = (color, color, color);
-		double proj_height = PROJ_COEFF / depth * 4;
+		double proj_height = find_min((int)(PROJ_COEFF / depth), 2 * HEIGHT);
 		t_pos p1, p2;
 		p1.x = ray * SCALE;
 		p1.y = (HALF_HEIGHT - proj_height / 2);
@@ -419,61 +385,6 @@ void	ray_cast2(t_data *data){
 		cur_ang += DELTA_RAY;
 	}
 }
-
-void	ray_cast(t_data *data)
-{
-	double cur_ang = data->plr->angl - HALF_FOV;
-	double xo = data->plr->pos.x, yo = data->plr->pos.y;
-	double cos_a, sin_a;
-	t_pos pos_end;
-
-	for (int i = 0; i < NUM_RAYS; i++)
-	{
-		
-		cos_a = cos(cur_ang);
-		sin_a = sin(cur_ang);
-		pos_end.x = 0;
-		pos_end.y = 0;
-		double proj_height;
-		t_pos p1;
-		t_pos p2;
-		p1.x = 0;
-		p1.y = 0;
-		p2.x = 0;
-		p2.y = 0;
-		int k = 0;
-		for (; !cheack_pos(pos_end, data->map_pos) && k < MAX_DEPTH; ++k)
-		{
-			pos_end.x = xo + k * cos_a;
-			pos_end.y = yo + k * sin_a;	
-		}
-
-		k *= cos(data->plr->angl - cur_ang);
-		int color = 255 / (1 + k * k * 0.0002);
-		int clr = (color, color, color);
-		proj_height = PROJ_COEFF / k * 4;
-		
-		p1.x = i * SCALE;
-		p1.y = (HALF_HEIGHT - proj_height / 2);
-		p2.x = SCALE;
-		p2.y = proj_height;
-		draw_rect21(p1, SCALE * BLOCK_SIZE, proj_height, data->mlx, clr);
-		// печать 2д лучей от камеры
-		//_dda_line(data->plr->pos, pos_end, PLAYER_B, data->mlx);
-		cur_ang += DELTA_RAY;
-	}
-}
-
-// void	print_pos_map(t_pos *a)
-// {
-// 	for (int i = 0; i < 31; i++)
-// 	{
-// 		printf("i=%d aX=%f aY=%f\n", i, a[i].x, a[i].y);
-// 	}
-// 	// printf("i=%d aX=%f aY=%f\n", 0, a[0].x, a[0].y);
-// 	// printf("i=%d aX=%f aY=%f\n", 1, a[0].x + BLOCK_SIZE, a[0].y + BLOCK_SIZE);
-	
-// }
 
 int	main(void)
 {
