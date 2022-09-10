@@ -1,23 +1,39 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   all.c                                              :+:      :+:    :+:   */
+/*   all_v1.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/08/26 19:49:01 by ltacos            #+#    #+#             */
-/*   Updated: 2022/08/28 08:22:20 by ltacos           ###   ########.fr       */
+/*   Created: 2022/08/31 10:45:55 by ltacos            #+#    #+#             */
+/*   Updated: 2022/09/10 05:42:01 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/cub3D.h"
-#define DELTA 0.1f
-#define BLOCK_SIZE 60
-#define FOV (3.14 / 4)
-#define HALF_FOV (FOV / 4)
-#define MAX_DEPTH (WIDTH / BLOCK_SIZE)
-#define NUM_RAYS	13
+#define DELTA 0.12f
+#define BLOCK_SIZE 64
+#define FOV (3.1415926535f / 2)
+#define HALF_FOV (FOV /2)
+#define MAX_DEPTH ((int)(WIDTH / BLOCK_SIZE))
+#define NUM_RAYS	400
 #define DELTA_RAY (FOV / (NUM_RAYS - 1))
+#define DIST (NUM_RAYS / (2 * tan(HALF_FOV)))
+#define SCALE ((int)(WIDTH / NUM_RAYS))
+#define PROJ_COEFF (DIST * BLOCK_SIZE * SCALE)
+ 
+
+// жёлтый
+#define CLR_N 0xFFFF00
+
+// синий
+#define CLR_S 0x0000FF
+
+// фиолетовый
+#define CLR_E 0xFF00FF
+
+// серый 
+#define CLR_W 0x808080
 
 typedef struct s_mlx
 {
@@ -49,13 +65,11 @@ typedef struct s_data
 	t_pos	*map_pos;
 }	t_data;
 
-
 t_mlx	*init_mlx(void)
 {
 	t_mlx	*new_mlx;
 
 	new_mlx = (t_mlx *)malloc(sizeof(t_mlx));
-
 	new_mlx->p_mlx = mlx_init();
 	new_mlx->p_win = mlx_new_window(new_mlx->p_mlx, WIDTH, HEIGHT, "cub3D");
 	new_mlx->p_img = mlx_new_image(new_mlx->p_mlx, WIDTH, HEIGHT);
@@ -65,30 +79,46 @@ t_mlx	*init_mlx(void)
 	return (new_mlx);
 }
 
-t_plr	*init_plr(void)
-{
-	t_plr	*new_plr;
-
-	new_plr = malloc(sizeof(t_plr));
-	new_plr->pos.x = HALF_WIDTH;
-	new_plr->pos.y = HALF_HEIGHT;
-	new_plr->angl = 0;
-	return (new_plr);
-}
-
-t_pos	*init_arr_pos(void)
-{
-	t_pos	*map_pos;
 		char	map[8][8] = {
 	{'1', '1', '1', '1', '1', '1', '1', '1'},
 	{'1', '0', '0', '0', '0', '0', '0', '1'},
 	{'1', '0', '0', '1', '0', '0', '0', '1'},
 	{'1', '0', '0', '1', '0', '0', '0', '1'},
 	{'1', '0', '0', '0', '1', '0', '0', '1'},
-	{'1', '0', '0', '0', '0', '0', '0', '1'},
+	{'1', '0', 'P', '0', '0', '0', '0', '1'},
 	{'1', '0', '0', '0', '0', '0', '0', '1'},
 	{'1', '1', '1', '1', '1', '1', '1', '1'}
 	};
+
+
+t_plr	*init_plr(void)
+{
+	t_plr	*new_plr;
+
+	int count = 0;
+	int i = -1;
+	new_plr = malloc(sizeof(t_plr));
+	while (++i < 8)
+	{
+		int j = -1;
+		while (++j < 8)
+		{
+			if (map[i][j] == 'P')
+			{
+				new_plr->pos.x = j * BLOCK_SIZE ;//+ (BLOCK_SIZE / 2);
+				new_plr->pos.y = i * BLOCK_SIZE ;//+ (BLOCK_SIZE / 2);
+				new_plr->angl = 0;
+				count++;
+			}
+		}
+	}
+	return (new_plr);
+}
+
+t_pos	*init_arr_pos(void)
+{
+	t_pos	*map_pos;
+
 
 	map_pos = (t_pos *)malloc(sizeof(t_pos) * 31);
 	int count = 0;
@@ -138,17 +168,6 @@ double	mod(double a)
 	return (a);
 }
 
-void	_set_background(t_mlx *mlx)
-{
-	int	*img;
-	int	i;
-
-	i = 0;
-	img = (int *)(mlx->p_addr);
-	while (i < HEIGHT * WIDTH)
-		img[i++] = BACKGROUND >> 2;
-}
-
 int	_put_pixel(t_pos *a, int color, t_mlx *mlx)
 {
 	char	*dst;
@@ -179,45 +198,70 @@ void	_dda_line(t_pos a, t_pos b, int color, t_mlx *mlx)
 		cur.x += delta.x;
 		cur.y += delta.y;
 	}
+	
 }
 
-void	draw_rect(t_pos start, int len, t_mlx *mlx)
+void	draw_rect21(t_pos start, int w, int h, t_mlx *mlx, int color)
 {
 	t_pos	tmp;
 
-	tmp.x = start.x + len - 1;
-	tmp.y = start.y - 1;
+	tmp.x = (start.x + w / BLOCK_SIZE);
+	tmp.y = start.y;
 	int i = -1;
-	while (++i < len - 1)
+	
+	while (++i < h)
 	{
-		_dda_line(start, tmp, WALL_B, mlx);
-		start.y += 1;
-		tmp.y += 1;
+		_dda_line(start, tmp, color, mlx);
+		start.y++;
+		tmp.y++;
 	}
-	//mlx_put_image_to_window(mlx->p_mlx, mlx->p_win, mlx->p_img, 0, 0);
 }
 
-void	print_map2d(t_data *data)
+int	close_win(t_data *data)
 {
-	int count = 31;
-	int c = 0;
-	while (c < count)
-		draw_rect(data->map_pos[c++], BLOCK_SIZE, data->mlx);
+	free(data->mlx);
+	free(data->plr);
+	free(data->map_pos);
+	free(data);
+	exit(0);
+	return (0);
+}
+
+void	draw_all(t_data *data)
+{
+	//_set_background(data->mlx);
+	t_pos pos_floor, pos_sky;
+	pos_sky.x = 0;
+	pos_sky.y = 0;
+
+	pos_floor.x = 0;
+	pos_floor.y = HALF_HEIGHT;
+	//рисуем пол и небо
+	draw_rect21(pos_sky, WIDTH * BLOCK_SIZE, HEIGHT / 2, data->mlx, 0x4682B4);
+	draw_rect21(pos_floor, WIDTH * BLOCK_SIZE, HEIGHT / 2, data->mlx, 0x008000);
+	
+	//print_map2d(data);
+	ray_cast2(data);
+	mlx_put_image_to_window(data->mlx->p_mlx, data->mlx->p_win, data->mlx->p_img, 0, 0);
 }
 
 void	move(int key, t_data *data)
 {
-	_set_background(data->mlx);
-	print_map2d(data);
-	
-	//ray_cast(data);
-
 	int	speed = 1.5;
 
 	if (key == TURN_L)
+	{
 		data->plr->angl -= 0.5 * DELTA * speed;
+		draw_all(data);
+		return ;
+	}
 	if (key == TURN_R)
+	{
 		data->plr->angl += 0.5 * DELTA * speed;
+		draw_all(data);
+		return ;
+	}
+		
 
 	double cos_a;
 	double sin_a;
@@ -229,182 +273,203 @@ void	move(int key, t_data *data)
 	if (key == M_DIRECTLY){
 		data->plr->pos.x += cos_a * DELTA * speed;
 		data->plr->pos.y += sin_a * DELTA * speed;
+		draw_all(data);
+		return ;
 	}
-	else if (key == M_BACK)
+	if (key == M_BACK)
 	{
 		data->plr->pos.x -= cos_a * DELTA * speed;
 		data->plr->pos.y -= sin_a * DELTA * speed;
+		draw_all(data);
+		return ;
 	}
-	else if (key == M_RIGHT)
+	if (key == M_RIGHT)
 	{
 		data->plr->pos.x -= sin_a * DELTA * speed;
 		data->plr->pos.y += cos_a * DELTA * speed;
+		draw_all(data);
+		return ;
 	}
-	else if (key == M_LEFT)
+	if (key == M_LEFT)
 	{
 		data->plr->pos.x += sin_a * DELTA * speed;
 		data->plr->pos.y -= cos_a * DELTA * speed;
+		draw_all(data);
+		return ;
 	}
-	ray_cast(data);
-	mlx_pixel_put(data->mlx->p_mlx, data->mlx->p_win, data-> plr->pos.x, data->plr->pos.y, PLAYER_B);
-	mlx_put_image_to_window(data->mlx->p_mlx, data->mlx->p_win, data->mlx->p_img, 0, 0);
+	if (key == EXIT_WINDW)
+		close_win(data);
+	draw_all(data);
 }
 
-int	cheack_pos(t_pos a, t_pos *b, t_pos *line)
+int	cheack_pos(t_pos a, t_pos *b)
 {
 	double ax, cx, bx, ay, cy, by;
-	for (size_t i = 0; i < 31; i++)
-	{
-		ax = b[i].x - 2, ay = b[i].y - 2;
-		cx = b[i].x + BLOCK_SIZE + 1, cy = b[i].y + BLOCK_SIZE + 1;
-		bx = a.x, by = a.y;
-		if (bx > ax && by > ay && bx < cx && by < cy)
-		{
-			*line = b[i];
-			return 1;
-		}
-	}
-	return 0;
-}
-
-int	cheack_pos_local(t_pos a, t_pos b, int num)
-{
-	double ax, cx, bx, ay, cy, by;
-
-	ax = b.x, ay = b.y;
-	cx = b.x + BLOCK_SIZE, cy = b.y + BLOCK_SIZE;
-	bx = (int)a.x, by = (int)a.y;
-	// if (num == 2)
-	// {
-	// 	printf("ax=%f ay=%f\n", ax, ay);
-	// 	printf("cx=%f cy=%f\n", cx, cy);
-	// 	printf("bx=%f by=%f\n", bx, by);
-	// 	printf("HYI\n");
-		if (bx > ax && by > ay && bx < cx && by < cy)
-			return 1;
-	// }
-	// if (num == 1)
-	// {
-	// 	printf("ax=%f ay=%f\n", ax, ay);
-	// 	printf("cx=%f cy=%f\n", cx, cy);
-	// 	printf("bx=%f by=%f\n", bx, by);
-	// 	if (bx > ax && by > ay && bx < cx && by < cy)
-	// 		return 1;
-	// }
-
-	return 0;
-}
-
-double resize_line(double hvd, t_data *data, int j, t_pos f, int num)
-{
-	double cur_ang =  data->plr->angl - HALF_FOV + 0.1 * j;
-	double cos_a = cos(cur_ang);
-	double sin_a = sin(cur_ang);
-	double x = hvd * cos_a +  data->plr->pos.x;
-	double y = hvd * sin_a +  data->plr->pos.y;
-	double fix_x = x / BLOCK_SIZE * BLOCK_SIZE;
-	double fix_y = y / BLOCK_SIZE * BLOCK_SIZE;
-			//printf("verticale\n");
-	t_pos tmp;
-	
-	tmp.x = fix_x;
-	tmp.y = fix_y;
-
-	while (cheack_pos_local(tmp, f, num))
-	{
-		hvd -= 1;
-		x = hvd * cos_a + data->plr->pos.x;
-		y = hvd * sin_a + data->plr->pos.y;
-		fix_x = x / BLOCK_SIZE * BLOCK_SIZE;
-		fix_y = y / BLOCK_SIZE * BLOCK_SIZE;
-		tmp.x = fix_x;
-		tmp.y = fix_y;
-	}
-	return hvd;
-}
-
-void	ray_cast(t_data *data)
-{
-	// int left = data->plr->pos.x - data->plr->pos.x / BLOCK_SIZE * BLOCK_SIZE;
-	// int top = data->plr->pos.y - data->plr->pos.y / BLOCK_SIZE * BLOCK_SIZE;
-	// int right =  BLOCK_SIZE - (left);
-	// int botton = BLOCK_SIZE - (top);
-
-	for (int i = 0; i < NUM_RAYS; i++)
-	{
-		double cur_ang = data->plr->angl - HALF_FOV + 0.1 * i;
-		double cos_a = cos(cur_ang);
-		double sin_a = sin(cur_ang);
-		double vd = 0, hd = 0;
-
-		//verticale
-		for (double j = 0; j < MAX_DEPTH; j += 0.1)
-		{
-			if (cos_a > 0)
-				vd = cos_a + BLOCK_SIZE / cos_a * j + 1;
-			else if (cos_a <= 0)
-				vd = (-cos_a) + BLOCK_SIZE / (-cos_a) * j + 1;
-
-			double x = vd * cos_a + data->plr->pos.x;
-			double y = vd * sin_a + data->plr->pos.y;
-			double fix_x = x / BLOCK_SIZE * BLOCK_SIZE;
-			double fix_y = y / BLOCK_SIZE * BLOCK_SIZE;
-			t_pos tmp;
-
-			tmp.x = fix_x;
-			tmp.y = fix_y;
-			t_pos f;
-			int num = 1;
-				if (cheack_pos(tmp, data->map_pos, &f))
-				{
-					//vd = resize_line(vd, data, i, f, num);
-					break ;
-				}
-		}
-		//gorizontal
-		for (double k = 0; k < MAX_DEPTH; k += 0.1)
-		{
-			if (sin_a > 0)
-				hd = sin_a + BLOCK_SIZE / sin_a * k + 1;
-			else if (sin_a <= 0)
-				hd = (-sin_a) + BLOCK_SIZE / (-sin_a) * k + 1;
-			double x = hd * cos_a + data->plr->pos.x;
-			double y = hd * sin_a + data->plr->pos.y;
-			double fix_x = x / BLOCK_SIZE * BLOCK_SIZE;
-			double fix_y = y / BLOCK_SIZE * BLOCK_SIZE;
-			t_pos tmp;
-
-			tmp.x = fix_x;
-			tmp.y = fix_y;
-			t_pos f;
-			int num = 2;
-
-			if (cheack_pos(tmp, data->map_pos, &f))
-			{
-				//hd = resize_line(hd, data, i, f, num);
-				break ;
-			}
-		}
-
-		t_pos	toPos;
-		double ray_size = find_min(hd, vd);
-		printf("ray_size=%f\n", ray_size);
-		printf("hd=%f vd=%f\n", hd, vd);
-		toPos.x = ray_size * cos(cur_ang) + data->plr->pos.x;
-		toPos.y = ray_size * sin(cur_ang) + data->plr->pos.y;
-		_dda_line(data->plr->pos, toPos, FLOOR_B, data->mlx);
-	}
-}
-
-void	print_pos_map(t_pos *a)
-{
 	for (int i = 0; i < 31; i++)
 	{
-		printf("i=%d aX=%f aY=%f\n", i, a[i].x, a[i].y);
+		ax = b[i].x, ay = b[i].y;
+		cx = b[i].x + BLOCK_SIZE, cy = b[i].y + BLOCK_SIZE;
+		bx = a.x, by = a.y;
+		if (bx > ax && by > ay && bx < cx && by < cy)
+			return 1;
 	}
-	// printf("i=%d aX=%f aY=%f\n", 0, a[0].x, a[0].y);
-	// printf("i=%d aX=%f aY=%f\n", 1, a[0].x + BLOCK_SIZE, a[0].y + BLOCK_SIZE);
+	return 0;
+}
+
+#define BLOCK3D (BLOCK_SIZE * BLOCK_SIZE)
+
+//texture settings 64x64
+#define TEXTURE_WIDTH 64
+#define TEXTURE_HEIGHT 64
+#define TEXTURE_SCALE (TEXTURE_WIDTH / BLOCK_SIZE)
+
+
+typedef struct	s_img {
+	void	*img;
+	char	*addr;
+	int		bpp;
+	int		llen;
+	int		endian;
+	char	*relative_path;
+	int		img_width;
+	int		img_height;
+}				t_img;
+
+int	my_mlx_pixel_get(t_img *data, int x, int y)
+{
+
+	char	*dst;
+
+	dst = data->addr + (y * data->llen + x * (data->bpp / 8));
+	return *(unsigned int*)dst;
+}
+
+void	my_mlx_pixel_put(t_mlx *data, int x, int y, int color)
+{
+	char	*dst;
+
+	dst = data->p_addr + (y * data->len + x * (data->bpp / 8));
+	*(unsigned int*)dst = color;
+}
+
+void	ray_cast2(t_data *data){
+	int ox, oy;
+	double cur_ang, cos_a, sin_a;
+	int xm, ym;
+
+	ox = data->plr->pos.x;
+	oy = data->plr->pos.y;
+	xm = ox / BLOCK_SIZE * BLOCK_SIZE;
+	ym = oy / BLOCK_SIZE * BLOCK_SIZE;
+	cur_ang = data->plr->angl - HALF_FOV;
+
+	t_img	timg;
+	timg.img = mlx_xpm_file_to_image(data->mlx->p_mlx, "./textures/bricks.xpm", &timg.img_width, &timg.img_height);
+	timg.addr = mlx_get_data_addr(timg.img, &timg.bpp, &timg.llen, &timg.endian);
 	
+	for (int ray = 0; ray < NUM_RAYS; ray++)
+	{
+		sin_a = sin(cur_ang);
+		cos_a = cos(cur_ang);
+		double xh, yv;
+		double dx, dy;
+		double depth_v, depth_h;
+		//Verticale
+		if (cos_a >= 0)
+		{
+			xh = xm + BLOCK_SIZE;
+			dx = 1;
+		}
+		else{
+			xh = xm;
+			dx = -1;
+		}
+		for (int i = 0; i < WIDTH; i+= BLOCK_SIZE)
+		{
+			depth_v = (xh - ox) / cos_a;
+			yv = oy + depth_v * sin_a;
+			t_pos pos_v;
+			pos_v.x = xh + dx;
+			pos_v.y = yv;
+			if (cheack_pos(pos_v, data->map_pos))
+				break;
+			xh += dx * BLOCK_SIZE;
+		}
+
+		//Horizontal
+		if (sin_a >= 0)
+		{
+			yv = ym + BLOCK_SIZE;
+			dy = 1;
+		}
+		else {
+			yv = ym;
+			dy = -1;
+		}
+		for (int i = 0; i < HEIGHT; i+= BLOCK_SIZE)
+		{
+			depth_h = (yv - oy) / sin_a;
+			xh = ox + depth_h * cos_a;
+			t_pos pos_h;
+			pos_h.x = xh;
+			pos_h.y = yv + dy;
+			if (cheack_pos(pos_h, data->map_pos))
+				break;
+			yv += dy * BLOCK_SIZE;
+		}
+		
+		//projection
+		double depth = find_min(depth_h, depth_v);
+		
+		double offset;
+		if (depth = depth_h)
+			offset = xh;
+		else
+			offset = yv;
+		
+		// int clr;
+		// if (depth == depth_h && sin_a >= 0)
+		// 	clr = CLR_S;
+		// else if (depth == depth_h && sin_a < 0)
+		// 	clr = CLR_N;
+		// else if (depth == depth_v && cos_a >= 0)
+		// 	clr = CLR_E;
+		// else
+		// 	clr = CLR_W;
+
+		depth *= cos(data->plr->angl - cur_ang);
+		depth = find_max(depth, 0.00001);
+
+		int proj_height = find_min((int)(PROJ_COEFF / depth), 2 * HEIGHT);
+		
+		// t_pos p1, p2;
+		// p1.x = ray * SCALE;
+		// p1.y = (HALF_HEIGHT - proj_height / 2);
+		// p2.x = SCALE;
+		// p2.y = proj_height ;
+		// draw_rect21(p1, SCALE * BLOCK_SIZE, proj_height, data->mlx, clr);
+		
+		// float	x1 = ray * SCALE;
+		// float	y1 = (HALF_HEIGHT - proj_height / 2);
+		// float	x2 = x1 + SCALE;// * BLOCK_SIZE / BLOCK_SIZE;
+		// float	y2 = y1 + proj_height;
+		// for (long int i = y1; i < y2; i++, k++)
+		// {
+		// 	for (long int j = x1; j < x2; j++, p++)
+		// 	{
+		// 		my_mlx_pixel_put(data->mlx, j, i, \
+		// 		my_mlx_pixel_get(&timg, (j % ((timg.img_height - 1))), \
+		// 		(i % ((timg.img_height - 1)))));
+		// 	}
+		// }
+		// печать 2д лучей от камеры
+		// _dda_line(data->plr->pos, pos_end, PLAYER_B, data->mlx);
+		
+		offset = (int)offset % BLOCK_SIZE;
+		
+		
+		cur_ang += DELTA_RAY;
+	}
 }
 
 int	main(void)
@@ -423,21 +488,12 @@ int	main(void)
 	data->mlx = mlx;
 	data->map_pos = map_pos;
 
-	_set_background(mlx);
-
-	//отрисовка карты
-	print_map2d(data);
-
-	//отрисовка точки игрока
-	mlx_pixel_put(mlx->p_mlx, mlx->p_win, plr->pos.x, plr->pos.y, PLAYER_B);
-	
-	//отрисовка угла обзора
-	ray_cast(data);
-	//print_pos_map(map_pos);
-	mlx_put_image_to_window(mlx->p_mlx, mlx->p_win, mlx->p_img, 0, 0);
+	draw_all(data);
 
 	mlx_hook(mlx->p_win, 2, (1L << 0), move, data);
+	mlx_hook(mlx->p_win, 17, 0, close_win, data);
 	mlx_loop(mlx->p_mlx);
+
 	free(mlx);
 	free(plr);
 	free(map_pos);
