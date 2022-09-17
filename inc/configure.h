@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 00:27:45 by ltacos            #+#    #+#             */
-/*   Updated: 2022/08/26 20:11:18 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/17 02:31:50 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,11 @@
 # define PR_W 87
 
 /*	COLOR BLOCK FOR 2D MAP*/
-# define WALL_B 0x808080
-# define FLOOR_B 0xFFFFFF
-# define PLAYER_B 0x008080
+// # define WALL_B 0x808080
+// # define FLOOR_B 0xFFFFFF
+// # define PLAYER_B 0x008080
 
-# define BACKGROUND 0x404040
+// # define BACKGROUND 0x404040
 
 /*	SIZE WINDOW	*/
 
