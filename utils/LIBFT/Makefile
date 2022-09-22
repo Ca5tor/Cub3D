@@ -11,15 +11,19 @@ RLIB	=	ranlib
 RM		=	rm -f
 
 SRC_L	=	ft_atoi.c \
-			ft_bzero.c \
-			ft_putstr_fd.c \
+			ft_isdigit.c \
 			ft_split.c \
-			ft_strchr.c \
-			ft_strdup.c \
+			ft_strcmp.c \
 			ft_strlen.c \
 			ft_strnstr.c \
-			ft_substr.c \
-			ft_strncmp.c
+			ft_strtrim.c \
+			ft_bzero.c \
+			ft_putstr_fd.c \
+			ft_strchr.c \
+			ft_strdup.c \
+			ft_strncmp.c \
+			ft_strstr.c \
+			ft_substr.c
 SRC_DIR	= ./
 SRC		= $(addprefix $(SRC_DIR), $(SRC_L))
 

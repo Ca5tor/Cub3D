@@ -6,13 +6,77 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 00:54:36 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/22 08:05:03 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/22 09:41:43 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef STRUCTS_H
 # define STRUCTS_H
 
+
+/////////////////////////////////////////////
+enum e_map_elem
+{
+	SPACE = -16,
+	FLOOR = 0,
+	WALL = 1,
+	EAST = 21,
+	NORTH = 30,
+	SOUTH = 35,
+	WEST = 39
+};
+
+enum e_error
+{
+	BAD_FILE = 1,
+	BAD_CONFIG = 2,
+	BAD_MAP = 3,
+	BAD_KEY = 4,
+	BAD_TEXTURE = 5,
+	BAD_RGB = 6,
+	BAD_EXTENSION = 7,
+	BAD_ARGUMENT = 8
+};
+
+typedef struct s_texture
+{
+	void	*img;
+	char	*addr;
+	int		bits_per_pixel;
+	int		line_length;
+	int		endian;
+	int		width;
+	int		height;
+}				t_texture;
+
+typedef struct s_params
+{
+	t_texture		so;
+	t_texture		no;
+	t_texture		we;
+	t_texture		ea;
+	int				*fl_rgb;
+	int				*ce_rgb;
+}					t_params;
+
+typedef struct s_map
+{
+	int	rows;
+	int	cols;
+	int	pl_x;
+	int	pl_y;
+	int	**matrix;
+}	t_map;
+
+typedef struct s_cub
+{
+	void			*mlx;
+	void			*win;
+	t_params		params;
+	t_map			map;
+}					t_cub;
+
+/// @brief ///////////////////
 typedef struct s_mlx
 {
 	void	*p_mlx;
@@ -53,31 +117,31 @@ typedef struct s_img {
 }				t_img;
 
 //Полученная с файла карта
-typedef struct s_map
-{
-	int	rows;
-	int	cols;
-	int	pl_x;
-	int	pl_y;
-	int	**matrix;
-}	t_map;
+// typedef struct s_map
+// {
+// 	int	rows;
+// 	int	cols;
+// 	int	pl_x;
+// 	int	pl_y;
+// 	int	**matrix;
+// }	t_map;
 
-typedef struct s_texture
-{
-	void	*img;
-	int		width;
-	int		height;
-}	t_texture;
+// typedef struct s_texture
+// {
+// 	void	*img;
+// 	int		width;
+// 	int		height;
+// }	t_texture;
 
-typedef struct s_params
-{
-	t_texture	so;
-	t_texture	no;
-	t_texture	we;
-	t_texture	ea;
-	int			*fl_rgb;
-	int			*ce_rgb;
-}	t_params;
+// typedef struct s_params
+// {
+// 	t_texture	so;
+// 	t_texture	no;
+// 	t_texture	we;
+// 	t_texture	ea;
+// 	int			*fl_rgb;
+// 	int			*ce_rgb;
+// }	t_params;
 
 typedef struct s_data
 {

@@ -21,7 +21,7 @@ HEADER		=	inc/cub3D.h \
 				utils/LIBFT/libft.h \
 				utils/GNL/get_next_line.h
 
-SOURCES_L	=	draw_utils.c inits.c main.c ray_cast.c ray_cast_utils.c move.c utils.c pars_init.c
+SOURCES_L	=	all_func.c draw_utils.c inits.c main.c ray_cast.c ray_cast_utils.c move.c utils.c pars_init.c
 	
 SOURCES_DIRECTORY	= ./src/
 SOURCES 			= $(addprefix $(SOURCES_DIRECTORY), $(SOURCES_L))

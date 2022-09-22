@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 00:53:59 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/22 08:14:03 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/22 09:40:01 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,4 +57,50 @@ int		get_proj_height(double depth, double cur_ang, t_data *data);
 void	get_cur_cs(double cur_ang, t_cs *cs);
 void	get_o_pos(t_data *data, t_param_rcst *rcst);
 
+
+///////////////////////////////////////
+/* GET RGB */
+int		pars_is_char_number(char *str);
+int		*pars_get_rgb(char *str);
+
+/* UTILS */
+int		pars_ends_with(char *str, char *end);
+int		pars_starts_with(char *str, char *pre);
+int		pars_char_arr_length(char **arr);
+char	*last_strstr(char *haystack, char *needle);
+char	**add_str(char **arr, char *str);
+
+char	**ft_split2(char *str, char token);
+void	pars_free_char_arr(char **arr);
+
+/* ARGC CHECK */
+void	pars_arg_check(int argc, char **argv);
+
+/* MAP PARSING */
+int		map_count_all_zeros(t_map *map);
+int		**map_get_empty_matrix(int rows, int cols);
+int		**map_copy_matrix(int **matrix, int rows, int cols);
+void	map_free_matrix(int	**matrix, int rows);
+void	map_dfs(int x, int y, int **mtx, t_map *map);
+
+void	map_exclude_border(int **mtx, t_map *map);
+bool	map_is_direction(char c);
+bool	map_is_allowed_char(char c);
+bool	map_is_num_direction(int c);
+bool	map_is_floor(int c);
+
+bool	map_is_safe(int x, int y, int **mtx, t_map *map);
+bool	parse_map(char **str_arr, t_map *map);
+bool	map_pre_parse(char **str_arr, t_map *map);
+
+/* CFG PARSING */
+int		pars_textures(char *key, char *value, int *flags, t_cub *cub);
+int		pars_textures2(char *key, char *value, int *flags, t_cub *cub);
+int		pars_textures3(char *key, char *value, int *flags, t_cub *cub);
+int		pars_read_cfg(char *file, t_cub *cub);
+int		pars_handle_str(char **key_value, int *flags, t_cub *cub);
+
+int		pars_rgb_value(char *key, char *value, int *flags, t_cub *cub);
+void	pars_free_all(t_cub *cub);
+void	pars_exit_with_error(int code);
 #endif

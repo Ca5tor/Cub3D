@@ -6,12 +6,18 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 01:05:36 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/17 17:37:21 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/22 09:43:07 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CUB3D_H
 # define CUB3D_H
+
+# include <stdbool.h>
+# include <stdlib.h>
+# include <stdio.h>
+# include <math.h>
+# include <fcntl.h>
 
 # include "configure.h"
 # include "structs.h"
@@ -21,9 +27,7 @@
 # include "../utils/GNL/get_next_line.h"
 # include "../mlx-linux/mlx.h"
 
-# include <stdlib.h>
-# include <stdio.h>
-# include <math.h>
+
 
 /*	for move.c	*/
 
@@ -52,5 +56,22 @@
 # define POS_S 1.55
 # define POS_E 0
 # define POS_W 3.17
+//////////////////////////////////////////////////
+
+# define FLAGS_NO 1 // 1U <<  0U
+# define FLAGS_SO 2 // 1U <<  1U
+# define FLAGS_WE 4 // 1U <<  2U
+# define FLAGS_EA 8 // 1U <<  3U
+# define FLAGS_F  16 // 1U << 4U
+# define FLAGS_C  32 // 1U << 5U
+# define ALL_FLAG 63 // 111111
+
+
+// # include <fcntl.h>
+// # include <stdio.h>
+// # include <stdlib.h>
+
+
+
 
 #endif

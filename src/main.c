@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 01:19:38 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/22 08:11:51 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/22 10:03:07 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,29 @@ t_pos	*sort_pos(t_data *data)
 	return (a);
 }
 
-int	main(void)
+int	main(int argc, char **argv)
 {
+	pars_arg_check(argc, argv);
+
+	t_cub cub;
+	cub.params.so.img = NULL;
+	cub.params.no.img = NULL;
+	cub.params.we.img = NULL;
+	cub.params.ea.img = NULL;
+	cub.params.ce_rgb = NULL;
+	cub.params.fl_rgb = NULL;
+	cub.map.matrix = NULL;
+	cub.mlx = mlx_init();
+	
+	int ret = pars_read_cfg(argv[1], &cub);
+
+	if (ret != 0)
+	{
+		printf("Fail. %s\n", argv[1]);
+		pars_free_all(&cub);
+		pars_exit_with_error(ret);
+	}
+
 	t_data	*data;
 	t_mlx	*mlx;
 	t_plr	*plr;
@@ -50,24 +71,38 @@ int	main(void)
 	data = init_data();
 	if (!data)
 		return (0);
-	data->map = malloc(sizeof(t_map));
-	data->params = malloc(sizeof(t_params));
+	//data->map = malloc(sizeof(t_map));
+	//data->params = malloc(sizeof(t_params));
 	if (!data->params)
 		return 0;
 	mlx = init_mlx();
 	data->mlx = mlx;
-	//printf("1clr=%d %d %d \n", data->params->ce_rgb[0], data->params->ce_rgb[1], data->params->ce_rgb[2]);
-	get_param(data);
-	//printf("1clr=%d %d %d \n", data->params->ce_rgb[0], data->params->ce_rgb[1], data->params->ce_rgb[2]);
-	//plr = init_plr(data->map);
+	data->mlx->p_mlx = cub.mlx;
+	data->mlx->p_win = cub.win;
+	
+	//get_param(data);
+
+	data->map->cols = cub.map.cols;
+	data->map->rows = cub.map.rows;
+	data->map->matrix = cub.map.matrix;
+	data->map->pl_x = cub.map.pl_x;
+	data->map->pl_y = cub.map.pl_y;
+
+	data->params->ce_rgb = cub.params.ce_rgb;
+	data->params->fl_rgb = cub.params.fl_rgb;
+	data->params->no = cub.params.no;
+	data->params->so = cub.params.so;
+	data->params->we = cub.params.we;
+	data->params->ea = cub.params.ea;
+
+
 	if (!plr)
 		return (0);
-	//printf("2clr=%d %d %d \n", data->params->ce_rgb[0], data->params->ce_rgb[1], data->params->ce_rgb[2]);
+	
 	data->plr = init_plr(data->map);
 	//map_pos = init_arr_pos(data);
 	data->map_pos =  init_arr_pos(data);
 	data->map_pos = sort_pos(data);
-
 
 	draw_all(data);
 

@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/09 16:37:31 by ltacos            #+#    #+#             */
-/*   Updated: 2022/07/18 21:11:52 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/22 09:49:37 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,4 +27,9 @@ char	*ft_strchr(const char *s, int c);
 void	ft_bzero(void *s, size_t n);
 char	*ft_strnstr(const char *haystack, const char *needle, size_t len);
 int		ft_strncmp(const char *s1, const char *s2, size_t n);
+
+int	ft_isdigit(int c);
+int	ft_strcmp(char *s1, char *s2);
+char	*ft_strstr(char *str, char *to_find);
+char	*ft_strtrim(char const *s1, char const *set);
 #endif
