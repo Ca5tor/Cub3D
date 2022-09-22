@@ -1,10 +1,10 @@
-NO ./aer.xpm
-SO ./aer.xpm
-WE ./aer.xpm
-EA ./aer.xpm
+NO ./textures/bricks.xpm
+SO ./textures/grass.xpm
+WE ./textures/greystone.xpm
+EA ./textures/stone.xpm
 
-F 0,0,0
-C 0,0,0
+F 220,100,0
+C 225,30,0
 
 1111111111111111111111111
 1000000001100000000000011

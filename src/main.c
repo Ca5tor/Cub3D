@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 01:19:38 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/22 10:03:07 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/22 10:30:23 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,16 +69,16 @@ int	main(int argc, char **argv)
 	t_pos	*map_pos;
 
 	data = init_data();
-	if (!data)
-		return (0);
-	//data->map = malloc(sizeof(t_map));
-	//data->params = malloc(sizeof(t_params));
-	if (!data->params)
-		return 0;
+	// if (!data)
+	// 	return (0);
+	data->map = malloc(sizeof(t_map));
+	data->params = malloc(sizeof(t_params));
+	// if (!data->params)
+	// 	return 0;
 	mlx = init_mlx();
 	data->mlx = mlx;
-	data->mlx->p_mlx = cub.mlx;
-	data->mlx->p_win = cub.win;
+	// data->mlx->p_mlx = cub.mlx;
+	// data->mlx->p_win = cub.win;
 	
 	//get_param(data);
 
@@ -96,8 +96,8 @@ int	main(int argc, char **argv)
 	data->params->ea = cub.params.ea;
 
 
-	if (!plr)
-		return (0);
+	// if (!plr)
+	// 	return (0);
 	
 	data->plr = init_plr(data->map);
 	//map_pos = init_arr_pos(data);
