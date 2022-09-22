@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 01:27:05 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/17 03:51:31 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/20 11:52:23 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,11 +68,18 @@ void	draw_rect(t_pos start, t_pos end, t_mlx *mlx, int color)
 	}
 }
 
+int	create_rgb(int r, int g, int b)
+{
+	return (r << 16 | g << 8 | b);
+}
+
 void	draw_all(t_data *data)
 {
 	t_pos	pos_floor;
 	t_pos	pos_sky;
 	t_pos	pos_end;
+	int		clr_sly;
+	int		clr_floor;
 
 	pos_sky.x = 0;
 	pos_sky.y = 0;
@@ -81,9 +88,13 @@ void	draw_all(t_data *data)
 	pos_end.x = WIDTH;
 	pos_end.y = HEIGHT / 2;
 
-	// Разобраться с передайчей цвета через структуру
-	draw_rect(pos_sky, pos_end, data->mlx, 0x4682B4);
-	draw_rect(pos_floor, pos_end, data->mlx, 0x008000);
+	clr_sly = create_rgb(data->params->ce_rgb[0], \
+		data->params->ce_rgb[1], data->params->ce_rgb[2]);
+	clr_floor = create_rgb(data->params->fl_rgb[0], \
+		data->params->fl_rgb[1], data->params->fl_rgb[2]);
+
+	draw_rect(pos_sky, pos_end, data->mlx, clr_sly);
+	draw_rect(pos_floor, pos_end, data->mlx, clr_floor);
 	ray_cast2(data);
 
 	mlx_put_image_to_window(data->mlx->p_mlx, data->mlx->p_win, \

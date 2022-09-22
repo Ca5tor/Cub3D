@@ -6,122 +6,109 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 01:27:08 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/17 03:39:34 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/22 08:14:33 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/cub3D.h"
 
-void	ray_cast2(t_data *data){
-	int ox, oy;
-	double cur_ang, cos_a, sin_a;
-	int xm, ym;
+static double	get_depth_v(t_data *data, t_param_rcst rcst, double *y)
+{
+	int		i;
+	int		xh;
+	int		dx;
+	double	depth_v;
 
-	ox = data->plr->pos.x;
-	oy = data->plr->pos.y;
-	xm = ox / BLOCK_SIZE * BLOCK_SIZE;
-	ym = oy / BLOCK_SIZE * BLOCK_SIZE;
-	cur_ang = data->plr->angl - HALF_FOV;
-
-	t_img	timg;
-	t_img	img_mas[4];
-	img_mas[0].img = mlx_xpm_file_to_image(data->mlx->p_mlx, "./textures/eagle.xpm", &timg.img_width, &timg.img_height);
-	img_mas[1].img = mlx_xpm_file_to_image(data->mlx->p_mlx, "./textures/grass.xpm", &timg.img_width, &timg.img_height);
-	img_mas[2].img = mlx_xpm_file_to_image(data->mlx->p_mlx, "./textures/stone.xpm", &timg.img_width, &timg.img_height);
-	img_mas[3].img = mlx_xpm_file_to_image(data->mlx->p_mlx, "./textures/redbrick.xpm", &timg.img_width, &timg.img_height);
-
-	for (int ray = 0; ray < NUM_RAYS; ray++)
+	dx = -1;
+	xh = rcst.m_xy.x;
+	if (rcst.cs.cos >= 0)
 	{
-		sin_a = sin(cur_ang);
-		cos_a = cos(cur_ang);
-		double x, y;
-		int xh, yv;
-		double dx, dy;
-		double depth_v, depth_h;
-		//Verticale
-		if (cos_a >= 0)
-		{
-			xh = xm + BLOCK_SIZE;
-			dx = 1;
-		}
-		else{
-			xh = xm;
-			dx = -1;
-		}
-		for (int i = 0; i < WIDTH; i+= BLOCK_SIZE)
-		{
-			depth_v = (xh - ox) / cos_a;
-			y = oy + depth_v * sin_a;
-			t_pos pos_v;
-			pos_v.x = xh + dx;
-			pos_v.y = y;
-			if (cheack_pos(pos_v, data->map_pos))
-				break;
-			xh += dx * BLOCK_SIZE;
-		}
+		xh += BLOCK_SIZE;
+		dx = 1;
+	}
+	i = -1;
+	while (++i < (WIDTH / BLOCK_SIZE))
+	{
+		depth_v = (xh - rcst.o_xy.x) / rcst.cs.cos;
+		*y = rcst.o_xy.y + depth_v * rcst.cs.sin;
+		if (bin_search_pos(data, xh + dx, *y))
+			break ;
+		xh += dx * BLOCK_SIZE;
+	}
+	return (depth_v);
+}
 
-		//Horizontal
-		if (sin_a >= 0)
-		{
-			yv = ym + BLOCK_SIZE;
-			dy = 1;
-		}
-		else {
-			yv = ym;
-			dy = -1;
-		}
-		for (int i = 0; i < HEIGHT; i+= BLOCK_SIZE)
-		{
-			depth_h = (yv - oy) / sin_a;
-			x = ox + depth_h * cos_a;
-			t_pos pos_h;
-			pos_h.x = x;
-			pos_h.y = yv + dy;
-			if (cheack_pos(pos_h, data->map_pos))
-				break;
-			yv += dy * BLOCK_SIZE;
-		}
-		
-		//projection
-		double depth = find_min(depth_h, depth_v);
-		int offset;
-		if (depth == depth_h)
-			offset = x;
-		else
-			offset = y;
+static double	get_depth_h(t_data *data, t_param_rcst rcst, double *x)
+{
+	int		i;
+	int		yv;
+	int		dy;
+	double	depth_h;
 
-		offset = mod((int)offset % BLOCK_SIZE);
+	yv = rcst.m_xy.y;
+	dy = -1;
+	if (rcst.cs.sin >= 0)
+	{
+		yv += BLOCK_SIZE;
+		dy = 1;
+	}
+	i = -1;
+	while (++i < HEIGHT / BLOCK_SIZE)
+	{
+		depth_h = (yv - rcst.o_xy.y) / rcst.cs.sin;
+		*x = rcst.o_xy.x + depth_h * rcst.cs.cos;
+		if (bin_search_pos(data, *x, yv + dy))
+			break ;
+		yv += dy * BLOCK_SIZE;
+	}
+	return (depth_h);
+}
 
-		if (depth == depth_h && sin_a >= 0)
-			timg.img = img_mas[0].img;
-		else if (depth == depth_h && sin_a < 0)
-			timg.img = img_mas[1].img;
-		else if (depth == depth_v && cos_a >= 0)
-			timg.img = img_mas[2].img;
-		else
-			timg.img = img_mas[3].img;
-		timg.addr = mlx_get_data_addr(timg.img, &timg.bpp, &timg.llen, &timg.endian);
+static void	draw_rect11(t_param_rcst rcst, t_data *data)
+{
+	t_pos	tmp;
+	t_pos	start;
+	int		clr;
+	int		i;
 
-		depth *= cos(data->plr->angl - cur_ang);
-		depth = find_max(depth, 0.00001);
+	start.x = rcst.ray * SCALE;
+	start.y = (HALF_HEIGHT - rcst.proj_height / 2);
+	tmp.x = rcst.ray * SCALE + SCALE;
+	tmp.y = (HALF_HEIGHT - rcst.proj_height / 2);
+	i = -1;
+	while (++i < rcst.proj_height)
+	{	
+		clr = my_mlx_pixel_get(&rcst.timg, rcst.offset, \
+			(int)(i * BLOCK_SIZE / rcst.proj_height));
+		_dda_line(start, tmp, clr, data->mlx);
+		start.y++;
+		tmp.y++;
+	}
+}
 
-		int proj_height = mod(find_min((int)(PROJ_COEFF / depth), 2 * HEIGHT));
-		
-		t_pos	tmp;
-		t_pos	start;
-		start.x = ray * SCALE;
-		start.y = (HALF_HEIGHT - proj_height / 2);
-		tmp.x = ray * SCALE + SCALE;
-		tmp.y = (HALF_HEIGHT - proj_height / 2);
+/*
+depth_hv.x = depth_h;
+depth_hv.y = depth_v;
+*/
+void	ray_cast2(t_data *data)
+{
+	t_param_rcst	rcst;
 
-		int i = -1;
-		while (++i < proj_height)
-		{
-			int clr = my_mlx_pixel_get(&timg, offset, (int)(i * timg.img_height / proj_height));
-			_dda_line(start, tmp, clr, data->mlx);
-			start.y++;
-			tmp.y++;
-		}
-		cur_ang += DELTA_RAY;
+	get_o_pos(data, &rcst);
+	rcst.cur_ang = data->plr->angl - HALF_FOV;
+	rcst.ray = -1;
+	while (++(rcst.ray) < NUM_RAYS)
+	{
+		get_cur_cs(rcst.cur_ang, &rcst.cs);
+		rcst.depth_hv.y = get_depth_v(data, rcst, &rcst.xy.y);
+		rcst.depth_hv.x = get_depth_h(data, rcst, &rcst.xy.x);
+		rcst.depth = find_min(rcst.depth_hv.x, rcst.depth_hv.y);
+		rcst.timg.img = get_img(rcst.depth, rcst.depth_hv, rcst.cs, data);
+		rcst.timg.addr = mlx_get_data_addr(rcst.timg.img, \
+			&rcst.timg.bpp, &rcst.timg.llen, &rcst.timg.endian);
+		rcst.proj_height = get_proj_height(rcst.depth, rcst.cur_ang, data);
+		rcst.offset = get_offset(rcst);
+		draw_rect11(rcst, data);
+		rcst.cur_ang += DELTA_RAY;
 	}
 }

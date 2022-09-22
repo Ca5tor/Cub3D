@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 01:27:02 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/17 03:58:51 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/22 08:16:55 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,9 @@ t_mlx	*init_mlx(void)
 	t_mlx	*new_mlx;
 
 	new_mlx = (t_mlx *)malloc(sizeof(t_mlx));
+	if (!new_mlx)
+		return (NULL);
+
 	new_mlx->p_mlx = mlx_init();
 	new_mlx->p_win = mlx_new_window(new_mlx->p_mlx, WIDTH, HEIGHT, "cub3D");
 	new_mlx->p_img = mlx_new_image(new_mlx->p_mlx, WIDTH, HEIGHT);
@@ -26,60 +29,70 @@ t_mlx	*init_mlx(void)
 	return (new_mlx);
 }
 
-		char	map[8][8] = {
-	{'1', '1', '1', '1', '1', '1', '1', '1'},
-	{'1', '0', '0', '0', '0', '0', '0', '1'},
-	{'1', '0', '0', '1', '0', '0', '0', '1'},
-	{'1', '0', '0', '1', '0', '0', '0', '1'},
-	{'1', '0', '0', '0', '1', '0', '0', '1'},
-	{'1', '0', 'P', '0', '0', '0', '0', '1'},
-	{'1', '0', '0', '0', '0', '0', '0', '1'},
-	{'1', '1', '1', '1', '1', '1', '1', '1'}
-	};
-
-t_plr	*init_plr(void)
+t_plr	*init_plr(t_map *map)
 {
 	t_plr	*new_plr;
 	int		count;
 	int		i;
 	int		j;
 
-	count = 0;
 	i = -1;
 	new_plr = malloc(sizeof(t_plr));
-	while (++i < 8)
-	{
-		j = -1;
-		while (++j < 8)
-		{
-			if (map[i][j] == 'P')
-			{
-				new_plr->pos.x = j * BLOCK_SIZE;
-				new_plr->pos.y = i * BLOCK_SIZE;
-				new_plr->angl = 0;
-				count++;
-			}
-		}
-	}
+	if (!new_plr)
+		return (NULL);
+
+	new_plr->pos.x = (int)((map->pl_x * BLOCK_SIZE) + (BLOCK_SIZE / 2));
+	new_plr->pos.y = (int)((map->pl_y * BLOCK_SIZE) + (BLOCK_SIZE / 2));
+
+	if (map->matrix[map->pl_y][map->pl_x] == MPN)
+		new_plr->angl = POS_N;
+	else if (map->matrix[map->pl_y][map->pl_x] == MPS)
+		new_plr->angl = POS_S;
+	else if (map->matrix[map->pl_y][map->pl_x] == MPW)
+		new_plr->angl = POS_W;
+	else
+		new_plr->angl = POS_E;
 	return (new_plr);
 }
 
-t_pos	*init_arr_pos(void)
+int	get_num_wall(t_map map)
+{
+	int		iters[2];
+	int		count;
+
+	iters[0] = -1;
+	count = 0;
+	while (++(iters[0]) < map.rows)
+	{
+		iters[1] = -1;
+		while (++(iters[1]) < map.cols)
+		{
+			if (map.matrix[iters[0]][iters[1]] == 1)
+				count++;
+		}
+	}
+	return (count);
+}
+
+t_pos	*init_arr_pos(t_data *data)
 {
 	t_pos	*map_pos;
+	int		iters[2];
+	int		count;
 
-	map_pos = (t_pos *)malloc(sizeof(t_pos) * 31);
-	int count = 0;
-	int i = -1;
-	while (++i < 8)
+	data->num_wall = get_num_wall(*data->map);
+	map_pos = (t_pos *)malloc(sizeof(t_pos) * data->num_wall);
+	count = 0;
+	iters[0] = -1;
+	while (++(iters[0]) < data->map->rows)
 	{
-		int j = -1;
-		while (++j < 8)
+		iters[1] = -1;
+		while (++(iters[1]) < data->map->cols)
 		{
-			if (map[i][j] == '1')
+			if (data->map->matrix[iters[0]][iters[1]] == 1)
 			{
-				map_pos[count].x = j * BLOCK_SIZE;
-				map_pos[count].y = i * BLOCK_SIZE;
+				map_pos[count].x = iters[1] * BLOCK_SIZE;
+				map_pos[count].y = iters[0] * BLOCK_SIZE;
 				count++;
 			}
 		}
@@ -92,5 +105,8 @@ t_data	*init_data(void)
 	t_data	*data;
 
 	data = malloc(sizeof(t_data));
+	if (!data)
+		return (NULL);
+	data->num_wall = 0;
 	return (data);
 }

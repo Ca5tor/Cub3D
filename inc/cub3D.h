@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 01:05:36 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/17 03:55:27 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/17 17:37:21 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,5 +40,17 @@
 # define DIST (NUM_RAYS / (tan(HALF_FOV)))
 # define PROJ_COEFF (SCALE / 2 * DIST * BLOCK_SIZE)
 # define SCALE (WIDTH / (NUM_RAYS - 1))
+
+// for map
+# define MPN 30
+# define MPS 35
+# define MPE 21
+# define MPW 39
+# define WALL 1
+
+# define POS_N 4.7
+# define POS_S 1.55
+# define POS_E 0
+# define POS_W 3.17
 
 #endif

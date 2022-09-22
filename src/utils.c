@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/17 01:27:11 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/17 03:31:29 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/22 08:14:36 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,19 +33,33 @@ double	mod(double a)
 	return (a);
 }
 
-int	cheack_pos(t_pos a, t_pos *b)
+/*
+int	levl[0] -  low
+int	levl[1] - mid
+int	levl[2] - height
+*/
+int	bin_search_pos(t_data *data, double ax, double ay)
 {
-	double	cx;
-	double	cy;
-	int		i;
+	int		levl[3];
+	t_pos	guess;
 
-	i = -1;
-	while (++i < 31)
+	if (ax < 0 || ay < 0)
+		return (0);
+	levl[0] = 0;
+	levl[2] = data->num_wall - 1;
+	while (levl[0] <= levl[2])
 	{
-		cx = b[i].x + BLOCK_SIZE;
-		cy = b[i].y + BLOCK_SIZE;
-		if (a.x > b[i].x && a.y > b[i].y && a.x < cx && a.y < cy)
+		levl[1] = (levl[0] + levl[2]) / 2;
+		guess = data->map_pos[levl[1]];
+		if (ax > guess.x && ay > guess.y && \
+			ax < (guess.x + BLOCK_SIZE) && ay < (guess.y + BLOCK_SIZE))
 			return (1);
+		if (((ax < guess.x || ay < guess.y) && \
+			(ax < (guess.x + BLOCK_SIZE) && ay < (guess.y + BLOCK_SIZE))) || \
+				(ax < guess.x && ay > guess.y))
+			levl[2] = levl[1] - 1;
+		else
+			levl[0] = levl[1] + 1;
 	}
 	return (0);
 }
