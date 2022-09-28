@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/26 02:45:40 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/28 11:04:03 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/28 14:47:29 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ int	main(int argc, char **argv)
 	t_cub	cub;
 	t_data	*data;
 
-	(void)argc;
+	pars_arg_check(argc, argv);
 	init_cub(&cub);
 	pars_err(pars_read_cfg(argv[1], &cub), &cub, argv);
 	data = init_data(cub);
