@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/26 00:59:49 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/26 19:57:06 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/28 12:02:47 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 # define MOVE_A	97
 # define MOVE_S	115
 # define MOVE_D	100
+
+# define KEY_SPACE 32
 
 /*	Rotate the player's point of view
 	(with arrows Left and Right)	*/

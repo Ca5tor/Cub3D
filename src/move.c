@@ -6,7 +6,7 @@
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/26 17:01:57 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/26 19:21:55 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/28 12:06:09 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ static void	sideways_move(int key, t_data *data)
 
 int	close_win(t_data *data)
 {
+	mlx_destroy_image(data->mlx->p_mlx, data->mlx->p_img);
 	free(data->mlx);
 	free(data->plr);
 	free(data->map_pos);
@@ -84,5 +85,5 @@ int	move(int key, t_data *data)
 		return (sideways_move(key, data), 0);
 	if (key == KEY_ESC)
 		close_win(data);
-	return (0);
+	return (draw_all(data), 0);
 }

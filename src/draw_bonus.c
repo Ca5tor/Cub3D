@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   draw.c                                             :+:      :+:    :+:   */
+/*   draw_bonus.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ltacos <ltacos@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/26 17:11:31 by ltacos            #+#    #+#             */
-/*   Updated: 2022/09/27 15:58:40 by ltacos           ###   ########.fr       */
+/*   Updated: 2022/09/27 13:26:35 by ltacos           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,30 @@ void	draw_rect(t_pos_double start, t_pos_double end, t_mlx *mlx, int color)
 	}
 }
 
+static void	print_map2d(t_data *data)
+{
+	int				i;
+	t_pos_double	start;
+	t_pos_double	end;
+	t_pos_double	plr_0;
+	static int		cof = 8;
+
+	i = -1;
+	while (++i < data->num_wall)
+	{
+		start.pos[X] = (int)(data->map_pos[i].pos[X] / cof);
+		start.pos[Y] = (int)(data->map_pos[i].pos[Y] / cof);
+		end.pos[X] = (int)((data->map_pos[i].pos[X] / cof) + (TILE / cof - 1));
+		end.pos[Y] = (int)(TILE / cof - 1);
+		draw_rect(start, end, data->mlx, 0x00FFFF);
+	}
+	plr_0.pos[X] = ((data->plr->pos.pos[X] - (TILE / 2)) / cof);
+	plr_0.pos[Y] = ((data->plr->pos.pos[Y] - (TILE / 2)) / cof);
+	end.pos[X] = ((plr_0.pos[X]) + (TILE / cof - 1));
+	end.pos[Y] = (TILE / cof - 1);
+	draw_rect(plr_0, end, data->mlx, 0xADFF2F);
+}
+
 void	draw_all(t_data *data)
 {
 	t_pos_double	pos_floor;
@@ -76,6 +100,7 @@ void	draw_all(t_data *data)
 	draw_rect(pos_sky, pos_end, data->mlx, data->clr_fons[CLR_SKY]);
 	draw_rect(pos_floor, pos_end, data->mlx, data->clr_fons[CLR_FLOOR]);
 	ray_cast2(data);
+	print_map2d(data);
 	mlx_put_image_to_window(data->mlx->p_mlx, data->mlx->p_win, \
 		data->mlx->p_img, 0, 0);
 }
